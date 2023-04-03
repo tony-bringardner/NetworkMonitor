@@ -202,16 +202,18 @@ void NetworkMonitor::checkAdmin() {
       if( target == WiFi.localIP().toString() ){
           if( udpServer != host || port != udpPort) {
             println("Admin control acquired by "+host+":"+String(port));      
+            delay(10);
             beginUdp(host.c_str(),port);
+            delay(10);
           }
       }
     } 
 
     //  reply with current setup
       String msg = getAdminResponse();              
-      udpReciever.beginPacket(host.c_str(), udpPort);
-      udpReciever.print(msg);
-      udpReciever.endPacket();
+      udpSender.beginPacket(host.c_str(), udpPort);
+      udpSender.print(msg);
+      udpSender.endPacket();
       Serial.println("sent="+msg+" host = "+host+" port="+String(udpPort));
       
   } else {

@@ -1,27 +1,32 @@
 /**
+The Arduino serial monitor is to help to debug Arduino software sketches or viewing data sent by a working sketch. However, the serial monitor requires your MCU to be connected to your local machine via USB port.
+The Netrwork monitor will alow you to monitor and control your network capable MCU (esp8266,esp32) remotly.
 
+The NetworkMonitor desktop tool also supports a ploiotter much like the Ardionmo Serial Plotter without the USB teather.
 */
 
 
 #include "NetworkMonitor.h"
 
-String ssid = "bringardner";//"ARRIS-F86C";
+String ssid = "bringardner";
 String password = "peekab00";
 
 //  One of each native data types for testing
-boolean debug = false;
+bool debug = false;
 unsigned long lastPrintTest = 0;
 int i = 23;
 float f = 23.23;
 long l = 1234;
 unsigned long ul = 321;
-boolean b = true;
+bool b = true;
 char  c = 'c';
 byte  bb = 12;
 word w = 23;
 short s = 43;
 double d = 34.54;
-
+bool plot=false;
+unsigned long lastPlot = 0;
+int plotDelay=100;
 
 //  Create a monitor
 NetworkMonitor monitor;
@@ -42,6 +47,11 @@ void setup() {
     Serial.print("x");
   }
   Serial.println();
+
+  /*
+  * Configure the monitor to conenct to any computer on the WAN.
+  * Once connected to the network you can take control from any computer on the WAN with the 'acquire' function.
+  */
   monitor.beginUdp("192.168.1.212",6000,6000);
   
   monitor.setTimeout(10000);
@@ -55,8 +65,15 @@ void setup() {
    * Set addPacketNumberToUdp = true and the monitor will add a packet number to each packet
    */
   monitor.addPacketNumberToUdp = false;
-  monitor.setDebug(false);
+
+  /*
+  * Turn on advertising to broadcast your existendce to all network monitors on the WAN
+  */
   monitor.setAdvertise(true);
+  /*
+  *  Frequency of Braodcasts
+  */
+  monitor.setAdvertisePeriod(60000);
   
   monitor.println("Network monitor configured\nip="+WiFi.localIP().toString());
   
@@ -79,7 +96,7 @@ void printTest() {
   monitor.println(l);
   monitor.print((char*)"unsigned long ");
   monitor.println(ul);
-  monitor.print((char*)"boolean ");
+  monitor.print((char*)"bool ");
   monitor.println(b);
   monitor.print((char*)"char ");
   monitor.println(c);
@@ -111,6 +128,51 @@ void printTest() {
   monitor.print((char*)"Exit Print   test");
 }
 
+void plotSinWave() {
+  for(int i = 0; i < 360; i += 5) {
+    float y1 = 1 * sin(i * M_PI / 180);
+    float y2 = 2 * sin((i + 90)* M_PI / 180);
+    float y3 = 5 * sin((i + 180)* M_PI / 180);
+
+    monitor.print(y1);
+    monitor.print("\t"); // a space ' ' or  tab '\t' character is printed between the two values.
+    monitor.print(y2);
+    monitor.print("\t"); // a space ' ' or  tab '\t' character is printed between the two values.
+    monitor.println(y3); // the last value is followed by a carriage return and a newline characters.
+
+    delay(plotDelay);
+  }
+}
+
+int plotIdx = 0;
+
+void plotSinWave2() {
+    float y1 = 1 * sin(plotIdx * M_PI / 180);
+    float y2 = 2 * sin((plotIdx + 90)* M_PI / 180);
+    float y3 = 5 * sin((plotIdx + 180)* M_PI / 180);
+
+    monitor.print(y1);
+    monitor.print("\t"); // a space ' ' or  tab '\t' character is printed between the two values.
+    monitor.print(y2);
+    monitor.print("\t"); // a space ' ' or  tab '\t' character is printed between the two values.
+    monitor.println(y3); // the last value is followed by a carriage return and a newline characters.
+
+    if( (plotIdx += 5) >= 360) {
+      plotIdx=0;
+    }
+    
+}
+
+int parseValue(String val) {
+  int ret = 0;
+  int idx=val.indexOf('=');
+  if( idx > 0 ) {
+    ret = val.substring(idx+1).toInt();
+  }
+      
+  return ret;
+}
+
 void loop() {
 
   unsigned long cur = millis();
@@ -128,9 +190,31 @@ void loop() {
     String line = monitor.readStringUntil('\n');
     line.trim();
     monitor.println("Line from monitor='" + line + "' cnt="+String(cnt)+" len="+String(line.length())+" time to read=" + String(millis() - start));
-    if( line == "test") {
-      printTest();
-    }
+
+    if( line == "test") {    
+      printTest();    
+    } else if( line.startsWith("plot")) {
+      int idx=line.indexOf(' ');
+      while( idx > 0 ) {
+        line = line.substring(idx+1);
+        monitor.println("new line='"+line+"'");
+        if(line.startsWith("on")) {
+          plot = true;
+          plotIdx=0;
+        } else if(line.startsWith("off")) {
+          plot = false;
+        } else if(isDigit(line[0])) {
+          plotDelay = line.toInt();
+        }        
+        idx=line.indexOf(' ');
+      }
+      monitor.println("Plot "+(plot?String("on"):String("off"))+" delay="+String(plotDelay));              
+    }    
   }
+
+  if( plot  && (millis()-lastPlot)>= plotDelay) {
+      plotSinWave2();      
+      lastPlot = millis();
+    }
 
 }
