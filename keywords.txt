@@ -1,3 +1,0 @@
-NetworkMonitor	KEYWORD1
-print	KEYWORD2
-printf	KEYWORD2

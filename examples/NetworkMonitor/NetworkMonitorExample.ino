@@ -8,8 +8,8 @@ The NetworkMonitor desktop tool also supports a ploiotter much like the Ardionmo
 
 #include "NetworkMonitor.h"
 
-String ssid = "SSID";
-String password = "SSID_PASSWORD";
+String ssid = "bringadner";
+String password = "peekab00";
 
 //  One of each native data types for testing
 bool debug = false;
