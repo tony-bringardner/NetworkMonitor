@@ -3,5 +3,5 @@ NetworkMonitor for Arduino project is an Arduino tool and library that provides 
 
 
 The library creates a Stream object, which can is code compatible with the 'Serial' object.  Input and output are availible through the NetworkMonitor desktop tool.
-It the MCU is connected via UB adn the Serial object is properly initialized, input and output to and from 'Serial' object as well.
+It the MCU is connected via USB, and the Serial object is properly initialized, input and output to and from 'Serial' object is also supported.
 
