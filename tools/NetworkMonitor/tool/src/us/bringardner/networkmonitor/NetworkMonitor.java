@@ -1,4 +1,4 @@
-package us.bringardner.neworkmonitor;
+package us.bringardner.networkmonitor;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;

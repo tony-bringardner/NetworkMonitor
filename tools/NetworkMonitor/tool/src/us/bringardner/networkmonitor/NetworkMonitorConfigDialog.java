@@ -1,4 +1,4 @@
-package us.bringardner.neworkmonitor;
+package us.bringardner.networkmonitor;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;

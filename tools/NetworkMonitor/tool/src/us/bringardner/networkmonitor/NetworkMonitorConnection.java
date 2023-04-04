@@ -1,4 +1,4 @@
-package us.bringardner.neworkmonitor;
+package us.bringardner.networkmonitor;
 
 import java.io.IOException;
 
