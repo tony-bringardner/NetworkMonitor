@@ -1,8 +1,11 @@
 /**
 The Arduino serial monitor is to help to debug Arduino software sketches or viewing data sent by a working sketch. However, the serial monitor requires your MCU to be connected to your local machine via USB port.
-The Netrwork monitor will alow you to monitor and control your network capable MCU (esp8266,esp32) remotly.
+The NetworkMonitor will allow you to monitor and control your network capable MCU (esp8266,esp32) remotely.
 
-The NetworkMonitor desktop tool also supports a ploiotter much like the Ardionmo Serial Plotter without the USB teather.
+The NetworkMonitor desktop tool also supports a plotter much like the Ardiono Serial Plotter without the USB connection.
+
+If the MCU is connect via USB and the Arduino Serial object is properly configured, serial input and output will work as well.
+
 */
 
 
@@ -52,7 +55,7 @@ void setup() {
   * Configure the monitor to conenct to any computer on the WAN.
   * Once connected to the network you can take control from any computer on the WAN with the 'acquire' function.
   */
-  monitor.beginUdp("192.168.1.212",6000,6000);
+  monitor.beginUdp("you.local.ip.address",6000,6000);
   
   monitor.setTimeout(10000);
   /*  
@@ -125,23 +128,7 @@ void printTest() {
   monitor.println("\nprintf should be 10 len5="+String(len));
   int peek = monitor.peek();
   monitor.println("\npeek ="+String(peek));
-  monitor.print((char*)"Exit Print   test");
-}
-
-void plotSinWave() {
-  for(int i = 0; i < 360; i += 5) {
-    float y1 = 1 * sin(i * M_PI / 180);
-    float y2 = 2 * sin((i + 90)* M_PI / 180);
-    float y3 = 5 * sin((i + 180)* M_PI / 180);
-
-    monitor.print(y1);
-    monitor.print("\t"); // a space ' ' or  tab '\t' character is printed between the two values.
-    monitor.print(y2);
-    monitor.print("\t"); // a space ' ' or  tab '\t' character is printed between the two values.
-    monitor.println(y3); // the last value is followed by a carriage return and a newline characters.
-
-    delay(plotDelay);
-  }
+  monitor.println((char*)"Exit Print   test");
 }
 
 int plotIdx = 0;
