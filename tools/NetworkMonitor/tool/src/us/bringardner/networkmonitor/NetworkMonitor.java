@@ -56,7 +56,7 @@ public class NetworkMonitor implements processing.app.tools.Tool  {
 	static  NetworkMonitorFrame frame;
 
 	public String getMenuTitle() {
-		return "NetworkMonitorV5";
+		return "NetworkMonitor";
 	}
 
 	public void init(Editor newEditor) {
