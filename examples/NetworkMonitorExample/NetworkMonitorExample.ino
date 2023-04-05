@@ -1,10 +1,15 @@
 /**
-The Arduino serial monitor is to help to debug Arduino software sketches or viewing data sent by a working sketch. However, the serial monitor requires your MCU to be connected to your local machine via USB port.
+The Arduino serial monitor is to help to debug Arduino software sketches or viewing data sent by a working sketch. 
+However, the serial monitor requires your MCU to be connected to your local machine via USB port.
 The NetworkMonitor will allow you to monitor and control your network capable MCU (esp8266,esp32) remotely.
 
 The NetworkMonitor desktop tool also supports a plotter much like the Ardiono Serial Plotter without the USB connection.
 
 If the MCU is connect via USB and the Arduino Serial object is properly configured, serial input and output will work as well.
+
+You can find the NetwrokMonitor desktop application at Arduino/libraries/NetworkMonitor/tools/NetworkMonitor/tool.
+
+Or download the desktop application from https://github.com/tony-bringardner/NetworkMonitor/blob/main/tools/NetworkMonitor/tool/NetworkMonitor.jar
 
 */
 
@@ -139,9 +144,9 @@ void plotSinWave2() {
     float y3 = 5 * sin((plotIdx + 180)* M_PI / 180);
 
     monitor.print(y1);
-    monitor.print("\t"); // a space ' ' or  tab '\t' character is printed between the two values.
+    monitor.print((char*)"\t"); // a space ' ' or  tab '\t' character is printed between the two values.
     monitor.print(y2);
-    monitor.print("\t"); // a space ' ' or  tab '\t' character is printed between the two values.
+    monitor.print((char*)"\t"); // a space ' ' or  tab '\t' character is printed between the two values.
     monitor.println(y3); // the last value is followed by a carriage return and a newline characters.
 
     if( (plotIdx += 5) >= 360) {
