@@ -59,7 +59,8 @@ class NetworkMonitor : public Stream {
     void sendAdvertisment();
     void beginUdp(const char *serverName, int serverPort, int udpLocalPort  ) ;
     void beginUdp(const char *serverName, int serverPort);
-
+    void beginUdp(const char *serverName);
+    
     int read();
     int available();
     void flush();

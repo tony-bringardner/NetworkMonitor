@@ -1,23 +1,36 @@
 /**
-The Arduino serial monitor is to help to debug Arduino software sketches or viewing data sent by a working sketch. 
+The Arduino serial monitor can help to debug Arduino software sketches or viewing data sent by a working sketch. 
 However, the serial monitor requires your MCU to be connected to your local machine via USB port.
-The NetworkMonitor will allow you to monitor and control your network capable MCU (esp8266,esp32) remotely.
+The NetworkMonitor will allow you to monitor and control your network capable MCU remotely.
 
-The NetworkMonitor desktop tool also supports a plotter much like the Ardiono Serial Plotter without the USB connection.
+NetworkMonitor has been tested on ESP8266 and ESP32 but should be compatible with any WIFI enabled MCU.
+
+The NetworkMonitor desktop tool also supports a plotter much like the Arduino Serial Plotter without the USB connection.
 
 If the MCU is connect via USB and the Arduino Serial object is properly configured, serial input and output will work as well.
 
-You can find the NetwrokMonitor desktop application at Arduino/libraries/NetworkMonitor/tools/NetworkMonitor/tool.
+You can find the NetwrokMonitorDesktop application with the NetworkMonitor library example (/examples/NetworkMonitorExample/NetworkMonitorDesktop.jar) or use the Arduino menu Scetch -> Show sketch folder.
 
-Or download the desktop application from https://github.com/tony-bringardner/NetworkMonitor/blob/main/tools/NetworkMonitor/tool/NetworkMonitor.jar
+If yo are using the Arduino IDE < 2.0 placing NetworkMonitorDesktop.jar in Arduino path Arduino/tools/NetworkMonitor/tool with make it available from the Arduino 'Tools' menu.
 
+
+
+Source code for the desktop application is available at https://github.com/tony-bringardner/NetworkMonitorDesktop
+
+There is also a mobile version of the desktop application yor can run an Android and IOS mobile devices. 
+The source code for a mobile version written in Dart/Flutter (https://flutter.dev) is availible at https://github.com/tony-bringardner/NetworkMonitorMobile.
 */
 
 
 #include "NetworkMonitor.h"
 
-String ssid = "SSID";
-String password = "SSID_PASSWORD";
+//  Set these values to match your environment
+#define  SSID "SSID"
+#define SSID_PASSWORD  "SSIS_PAWWORD"
+#define DESKTOP_ADDRESS "192.168.1.???"
+
+//  Create a monitor
+NetworkMonitor monitor;
 
 //  One of each native data types for testing
 bool debug = false;
@@ -34,21 +47,21 @@ short s = 43;
 double d = 34.54;
 bool plot=false;
 unsigned long lastPlot = 0;
-int plotDelay=100;
-
-//  Create a monitor
-NetworkMonitor monitor;
+int plotInterval=100;
+int plotIdx = 0;
 extern void printTest();
 
 
 
 
 void setup() {
+  //  Set up the Ardionl Serial object as normal
   Serial.begin(115200);
   while (!Serial);
   Serial.println();
 
-  WiFi.begin(ssid.c_str(), password.c_str());
+  //  Connect to wifi
+  WiFi.begin(SSID, SSID_PASSWORD);
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -57,32 +70,12 @@ void setup() {
   Serial.println();
 
   /*
-  * Configure the monitor to conenct to any computer on the WAN.
-  * Once connected to the network you can take control from any computer on the WAN with the 'acquire' function.
+  * Now configure the monitor to communicate with with your primary workstation where you will run the Desktop application.
+  * Once connected to the network you can run the desktop application on any machine on your WAN and take control using the desktop application 'acquire' function.
   */
-  monitor.beginUdp("you.local.ip.address",6000,6000);
+  monitor.beginUdp( DESKTOP_ADDRESS );
   
-  monitor.setTimeout(10000);
-  /*  
-   * By defult NetworkMonitor will include Serial in all operations.  
-   * You can excplude Serial by setting useSerial = false;
-   */
-  monitor.useSerial=true;
-  /*
-   * NeworkMonitor uses UDP and as a result some packets may not reach it's destination.
-   * Set addPacketNumberToUdp = true and the monitor will add a packet number to each packet
-   */
-  monitor.addPacketNumberToUdp = false;
-
-  /*
-  * Turn on advertising to broadcast your existendce to all network monitors on the WAN
-  */
-  monitor.setAdvertise(true);
-  /*
-  *  Frequency of Braodcasts
-  */
-  monitor.setAdvertisePeriod(60000);
-  
+  //  Now you can use the monitor intead of teh Serial object but , if the MCU is connected via USB you can still use the Arduino Serial monitor.
   monitor.println("Network monitor configured\nip="+WiFi.localIP().toString());
   
   printTest();
@@ -90,7 +83,9 @@ void setup() {
 }
 
 void printTest() {
-  //  print one of each data types
+  //  Very simple test / example  print one of each data types
+  //  The monitor is code/syntax compatible with the Serial object.
+
   monitor.print((char*)"Enter Print   test");
   monitor.print((char*)"Testing from ");
   monitor.println(__FILE__);
@@ -136,9 +131,12 @@ void printTest() {
   monitor.println((char*)"Exit Print   test");
 }
 
-int plotIdx = 0;
 
-void plotSinWave2() {
+
+/**
+ * Example of how to write data for the Plotter. 
+ */
+void plotSinWave() {
     float y1 = 1 * sin(plotIdx * M_PI / 180);
     float y2 = 2 * sin((plotIdx + 90)* M_PI / 180);
     float y3 = 5 * sin((plotIdx + 180)* M_PI / 180);
@@ -155,15 +153,6 @@ void plotSinWave2() {
     
 }
 
-int parseValue(String val) {
-  int ret = 0;
-  int idx=val.indexOf('=');
-  if( idx > 0 ) {
-    ret = val.substring(idx+1).toInt();
-  }
-      
-  return ret;
-}
 
 void loop() {
 
@@ -173,39 +162,45 @@ void loop() {
     lastPrintTest = cur;    
   }
 
-  //  read any input that's aiavailable and process it
+  //  read any input that's aiavailable and process it.
+  //  input might be from Arduino Serial monitor or the NetworkMonitor desktop or mobile application.
   int cnt = monitor.available();
 
   if (cnt>0) {
-    Serial.println(" read string expect ="+String(cnt));
+    //  If input is avaiblible read it as a string
     unsigned long start = millis();
     String line = monitor.readStringUntil('\n');
     line.trim();
     monitor.println("Line from monitor='" + line + "' cnt="+String(cnt)+" len="+String(line.length())+" time to read=" + String(millis() - start));
 
+    //  redo the print test
     if( line == "test") {    
       printTest();    
     } else if( line.startsWith("plot")) {
+      /**
+       * This code set's us up to generate data to test the Desktop plotter (Not availible in the Mobile application) 
+       * 
+       * Format:  plot [on/off] interval
+       */
       int idx=line.indexOf(' ');
       while( idx > 0 ) {
         line = line.substring(idx+1);
-        monitor.println("new line='"+line+"'");
         if(line.startsWith("on")) {
           plot = true;
           plotIdx=0;
         } else if(line.startsWith("off")) {
           plot = false;
         } else if(isDigit(line[0])) {
-          plotDelay = line.toInt();
+          plotInterval = line.toInt();
         }        
         idx=line.indexOf(' ');
       }
-      monitor.println("Plot "+(plot?String("on"):String("off"))+" delay="+String(plotDelay));              
+      monitor.println("Plot "+(plot?String("on"):String("off"))+" delay="+String(plotInterval));              
     }    
   }
 
-  if( plot  && (millis()-lastPlot)>= plotDelay) {
-      plotSinWave2();      
+  if( plot  && (millis()-lastPlot)>= plotInterval) {
+      plotSinWave();      
       lastPlot = millis();
     }
 

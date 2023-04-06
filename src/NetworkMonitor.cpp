@@ -66,6 +66,10 @@ void NetworkMonitor::beginUdp(const char *serverName, int serverPort) {
     beginUdp(serverName,serverPort,serverPort);      
 }
 
+void NetworkMonitor::beginUdp(const char *serverName) {
+    beginUdp(serverName,6000,6000);      
+}
+
 bool NetworkMonitor::find(char *target) {
   bool ret = false;
   if ( waitForAvailible() ) {
