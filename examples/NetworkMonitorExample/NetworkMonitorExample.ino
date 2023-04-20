@@ -25,9 +25,9 @@ The source code for a mobile version written in Dart/Flutter (https://flutter.de
 #include "NetworkMonitor.h"
 
 //  Set these values to match your environment
-#define  SSID "SSID"
-#define SSID_PASSWORD  "SSIS_PAWWORD"
-#define DESKTOP_ADDRESS "192.168.1.???"
+#define  SSID "bringardner"
+#define SSID_PASSWORD  "peekab00"
+#define DESKTOP_ADDRESS "192.168.1.212"
 
 //  Create a monitor
 NetworkMonitor monitor;
@@ -181,6 +181,7 @@ void loop() {
        * This code set's us up to generate data to test the Desktop plotter (Not availible in the Mobile application) 
        * 
        * Format:  plot [on/off] interval
+       * Example: plot on 1000    (turn on plot data at one second intervals)
        */
       int idx=line.indexOf(' ');
       while( idx > 0 ) {
